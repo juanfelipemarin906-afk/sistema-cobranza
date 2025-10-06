@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Users, Package, CreditCard, DollarSign, AlertTriangle, TrendingUp, User, Phone, CheckCircle, Clock, Plus, Edit2, Trash2, Download, Save, X, Eye, MessageCircle } from 'lucide-react';
 
 // Mock data structure with separate products per collector
 const initialCollectors = [
@@ -199,21 +198,23 @@ const App = () => {
     
     if (editingClient) {
       // Update existing client
-      setClients(clients.map(c => 
-        c.id === editingClient.id 
-          ? { ...editingClient, ...clientFormData, creditLimit: parseFloat(clientFormData.creditLimit) }
-          : c
-      ));
+      setClients(prevClients => 
+        prevClients.map(c => 
+          c.id === editingClient.id 
+            ? { ...c, ...clientFormData, creditLimit: parseFloat(clientFormData.creditLimit) }
+            : c
+        )
+      );
     } else {
       // Add new client - collectors can only add to themselves
       const newClient = {
-        id: clients.length + 1,
+        id: Math.max(...clients.map(c => c.id), 0) + 1,
         ...clientFormData,
         creditLimit: parseFloat(clientFormData.creditLimit),
         collectorId: getCurrentUserCollectorId(),
         products: clientFormData.products
       };
-      setClients([...clients, newClient]);
+      setClients(prevClients => [...prevClients, newClient]);
     }
     resetClientForm();
   };
@@ -244,9 +245,9 @@ const App = () => {
     }
     
     if (window.confirm('¿Está seguro de eliminar este cliente?')) {
-      setClients(clients.filter(c => c.id !== id));
+      setClients(prevClients => prevClients.filter(c => c.id !== id));
       // Also remove any debts associated with this client
-      setDebts(debts.filter(d => d.clientId !== id));
+      setDebts(prevDebts => prevDebts.filter(d => d.clientId !== id));
     }
   };
 
@@ -289,19 +290,21 @@ const App = () => {
     
     if (editingCollector) {
       // Update existing collector
-      setCollectors(collectors.map(c => 
-        c.id === editingCollector.id 
-          ? { ...editingCollector, ...collectorFormData, commission: parseFloat(collectorFormData.commission) }
-          : c
-      ));
+      setCollectors(prevCollectors => 
+        prevCollectors.map(c => 
+          c.id === editingCollector.id 
+            ? { ...c, ...collectorFormData, commission: parseFloat(collectorFormData.commission) }
+            : c
+        )
+      );
     } else {
       // Add new collector
       const newCollector = {
-        id: collectors.length + 1,
+        id: Math.max(...collectors.map(c => c.id), 0) + 1,
         ...collectorFormData,
         commission: parseFloat(collectorFormData.commission)
       };
-      setCollectors([...collectors, newCollector]);
+      setCollectors(prevCollectors => [...prevCollectors, newCollector]);
     }
     resetCollectorForm();
   };
@@ -328,7 +331,7 @@ const App = () => {
     }
     
     if (window.confirm('¿Está seguro de eliminar este cobrador?')) {
-      setCollectors(collectors.filter(c => c.id !== id));
+      setCollectors(prevCollectors => prevCollectors.filter(c => c.id !== id));
     }
   };
 
@@ -349,22 +352,24 @@ const App = () => {
     
     if (editingProduct) {
       // Update existing product
-      setProducts(products.map(p => 
-        p.id === editingProduct.id 
-          ? { ...editingProduct, ...productFormData, price: parseFloat(productFormData.price), commission: parseFloat(productFormData.commission), stock: parseInt(productFormData.stock) }
-          : p
-      ));
+      setProducts(prevProducts => 
+        prevProducts.map(p => 
+          p.id === editingProduct.id 
+            ? { ...p, ...productFormData, price: parseFloat(productFormData.price), commission: parseFloat(productFormData.commission), stock: parseInt(productFormData.stock) }
+            : p
+        )
+      );
     } else {
       // Add new product
       const newProduct = {
-        id: products.length + 1,
+        id: Math.max(...products.map(p => p.id), 0) + 1,
         ...productFormData,
         price: parseFloat(productFormData.price),
         commission: parseFloat(productFormData.commission),
         stock: parseInt(productFormData.stock),
         image: productFormData.image || 'https://placehold.co/100x100/27ae60/white?text=🥛'
       };
-      setProducts([...products, newProduct]);
+      setProducts(prevProducts => [...prevProducts, newProduct]);
     }
     resetProductForm();
   };
@@ -387,7 +392,7 @@ const App = () => {
     if (userRole !== 'admin') return;
     
     if (window.confirm('¿Está seguro de eliminar este producto?')) {
-      setProducts(products.filter(p => p.id !== id));
+      setProducts(prevProducts => prevProducts.filter(p => p.id !== id));
     }
   };
 
@@ -451,7 +456,7 @@ const App = () => {
     // Create payment record with today's date
     const today = getTodayDate();
     const newPayment = {
-      id: payments.length + 1,
+      id: Math.max(...payments.map(p => p.id), 0) + 1,
       clientId: selectedDebt.clientId,
       amount: paymentAmount,
       date: today,
@@ -555,36 +560,77 @@ const App = () => {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="text-white w-8 h-8" />
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#f0fdf4', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        padding: '16px' 
+      }}>
+        <div style={{ 
+          backgroundColor: 'white', 
+          borderRadius: '16px', 
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)', 
+          padding: '32px', 
+          width: '100%', 
+          maxWidth: '400px' 
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ 
+              backgroundColor: '#27ae60', 
+              width: '64px', 
+              height: '64px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              margin: '0 auto 16px' 
+            }}>
+              <span style={{ color: 'white', fontSize: '24px' }}>📦</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Sistema de Gestión y Cobranza</h1>
-            <p className="text-gray-600">Distribuidora de Alimentos</p>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+              Sistema de Gestión y Cobranza
+            </h1>
+            <p style={{ color: '#6b7280' }}>Distribuidora de Alimentos</p>
           </div>
           
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} style={{ spaceY: '24px' }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', color: '#374151', marginBottom: '8px' }}>
+                Usuario
+              </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '16px'
+                }}
                 placeholder="Ingrese su usuario"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', color: '#374151', marginBottom: '8px' }}>
+                Contraseña
+              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '16px'
+                }}
                 placeholder="Ingrese su contraseña"
                 required
               />
@@ -592,15 +638,25 @@ const App = () => {
             
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-200"
+              style={{
+                width: '100%',
+                backgroundColor: '#27ae60',
+                color: 'white',
+                padding: '12px',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               Iniciar Sesión
             </button>
           </form>
           
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-800 mb-2">Credenciales de prueba:</h3>
-            <div className="text-sm text-blue-700 space-y-1">
+          <div style={{ marginTop: '24px', padding: '16px', backgroundColor: '#eff6ff', borderRadius: '8px' }}>
+            <h3 style={{ fontWeight: 'bold', color: '#2563eb', marginBottom: '8px' }}>Credenciales de prueba:</h3>
+            <div style={{ fontSize: '14px', color: '#2563eb' }}>
               <p><strong>Administrador:</strong> admin / admin123</p>
               <p><strong>Cobrador Carlos:</strong> carlos / carlos123</p>
               <p><strong>Cobrador María:</strong> maria / maria123</p>
@@ -615,819 +671,1267 @@ const App = () => {
   // Navigation items based on role
   const getNavigationItems = () => {
     const baseItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
-      { id: 'payments', label: 'Pagos', icon: CreditCard },
+      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+      { id: 'payments', label: 'Pagos', icon: '💳' },
     ];
     
     if (userRole === 'admin') {
       return [
         ...baseItems,
-        { id: 'products', label: 'Productos', icon: Package },
-        { id: 'clients', label: 'Clientes', icon: Users },
-        { id: 'collectors', label: 'Cobradores', icon: User },
-        { id: 'reports', label: 'Reportes', icon: Download }
+        { id: 'products', label: 'Productos', icon: '🥛' },
+        { id: 'clients', label: 'Clientes', icon: '👥' },
+        { id: 'collectors', label: 'Cobradores', icon: '🚴' },
+        { id: 'reports', label: 'Reportes', icon: '📈' }
       ];
     } else if (userRole === 'collector') {
       return [
         ...baseItems,
-        { id: 'products', label: 'Productos', icon: Package },
-        { id: 'clients', label: 'Mis Clientes', icon: Users }
+        { id: 'products', label: 'Productos', icon: '🥛' },
+        { id: 'clients', label: 'Mis Clientes', icon: '👥' }
       ];
     }
     return baseItems;
   };
 
+  // Simple styles object
+  const styles = {
+    container: {
+      padding: '20px',
+      fontFamily: 'Arial, sans-serif',
+      maxWidth: '1200px',
+      margin: '0 auto'
+    },
+    header: {
+      backgroundColor: 'white',
+      padding: '16px',
+      marginBottom: '20px',
+      borderRadius: '8px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    },
+    nav: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '8px',
+      marginBottom: '24px'
+    },
+    navButton: {
+      padding: '8px 16px',
+      borderRadius: '6px',
+      border: '1px solid #e5e7eb',
+      backgroundColor: 'white',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: 'medium'
+    },
+    navButtonActive: {
+      padding: '8px 16px',
+      borderRadius: '6px',
+      backgroundColor: '#27ae60',
+      color: 'white',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: 'medium'
+    },
+    card: {
+      backgroundColor: 'white',
+      padding: '20px',
+      borderRadius: '8px',
+      marginBottom: '20px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    },
+    statsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+      gap: '20px',
+      marginBottom: '24px'
+    },
+    statCard: {
+      backgroundColor: 'white',
+      padding: '20px',
+      borderRadius: '8px',
+      borderLeft: '4px solid #27ae60'
+    },
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      marginTop: '16px'
+    },
+    th: {
+      textAlign: 'left',
+      padding: '12px',
+      borderBottom: '2px solid #e5e7eb',
+      fontWeight: 'bold'
+    },
+    td: {
+      padding: '12px',
+      borderBottom: '1px solid #e5e7eb'
+    },
+    button: {
+      padding: '6px 12px',
+      borderRadius: '4px',
+      border: 'none',
+      cursor: 'pointer',
+      marginRight: '8px'
+    },
+    primaryButton: {
+      backgroundColor: '#27ae60',
+      color: 'white',
+      padding: '8px 16px',
+      borderRadius: '6px',
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: 'bold'
+    },
+    dangerButton: {
+      backgroundColor: '#fee2e2',
+      color: '#ef4444',
+      padding: '6px 12px',
+      borderRadius: '4px',
+      border: 'none',
+      cursor: 'pointer'
+    },
+    successButton: {
+      backgroundColor: '#dbeafe',
+      color: '#2563eb',
+      padding: '6px 12px',
+      borderRadius: '4px',
+      border: 'none',
+      cursor: 'pointer'
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={styles.container}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 w-10 h-10 rounded-lg flex items-center justify-center">
-                <Package className="text-white w-6 h-6" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Sistema de Cobranza</h1>
-                <p className="text-sm text-gray-500">Distribuidora de Alimentos</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900 capitalize">{currentUser}</p>
-                <p className="text-xs text-gray-500">{userRole === 'admin' ? 'Administrador' : 'Cobrador'}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
-              >
-                Cerrar Sesión
-              </button>
-            </div>
+      <header style={styles.header}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ 
+            backgroundColor: '#27ae60', 
+            width: '40px', 
+            height: '40px', 
+            borderRadius: '8px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center'
+          }}>
+            <span style={{ color: 'white' }}>📦</span>
           </div>
+          <div>
+            <h1 style={{ fontSize: '18px', fontWeight: 'bold' }}>Sistema de Cobranza</h1>
+            <p style={{ fontSize: '12px', color: '#6b7280' }}>Distribuidora de Alimentos</p>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '14px', fontWeight: 'medium', color: '#1f2937' }}>{currentUser}</p>
+            <p style={{ fontSize: '12px', color: '#6b7280' }}>{userRole === 'admin' ? 'Administrador' : 'Cobrador'}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            style={{ 
+              backgroundColor: '#fee2e2', 
+              color: '#ef4444', 
+              padding: '8px 16px', 
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            Cerrar Sesión
+          </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation */}
-        <nav className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            {getNavigationItems().map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setCurrentView(item.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  currentView === item.id
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className="w-4 h-4" />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
+      {/* Navigation */}
+      <nav style={styles.nav}>
+        {getNavigationItems().map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setCurrentView(item.id)}
+            style={currentView === item.id ? styles.navButtonActive : styles.navButton}
+          >
+            {item.icon} {item.label}
+          </button>
+        ))}
+      </nav>
 
-        {/* Dashboard View */}
-        {currentView === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Cobrado Hoy</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCOP(totalCollectedToday)}</p>
-                  </div>
-                  <DollarSign className="w-8 h-8 text-green-500" />
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Pendiente</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCOP(totalPending)}</p>
-                  </div>
-                  <AlertTriangle className="w-8 h-8 text-red-500" />
-                </div>
-              </div>
-
-              {userRole === 'collector' && (
-                <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Mis Comisiones</p>
-                      <p className="text-2xl font-bold text-gray-900">{formatCOP(myCommissions)}</p>
-                    </div>
-                    <CreditCard className="w-8 h-8 text-yellow-500" />
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Clientes Morosos</p>
-                    <p className="text-2xl font-bold text-gray-900">{delinquentClients.length}</p>
-                  </div>
-                  <Clock className="w-8 h-8 text-blue-500" />
-                </div>
-              </div>
+      {/* Dashboard View */}
+      {currentView === 'dashboard' && (
+        <div>
+          {/* Stats Cards */}
+          <div style={styles.statsGrid}>
+            <div style={{ ...styles.statCard, borderLeftColor: '#27ae60' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Total Cobrado Hoy</p>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{formatCOP(totalCollectedToday)}</p>
             </div>
 
-            {/* Delinquent Clients */}
-            {delinquentClients.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Clientes Morosos 🚨</h3>
-                <div className="space-y-3">
-                  {delinquentClients.map((client) => (
-                    <div key={client.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">{client.clientName}</p>
-                        <p className="text-sm text-red-600">{formatCOP(client.amount)} - {client.daysOverdue} días</p>
-                      </div>
-                      <Clock className="w-5 h-5 text-red-500" />
-                    </div>
-                  ))}
-                </div>
+            <div style={{ ...styles.statCard, borderLeftColor: '#ef4444' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Total Pendiente</p>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{formatCOP(totalPending)}</p>
+            </div>
+
+            {userRole === 'collector' && (
+              <div style={{ ...styles.statCard, borderLeftColor: '#f59e0b' }}>
+                <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Mis Comisiones</p>
+                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{formatCOP(myCommissions)}</p>
               </div>
             )}
+
+            <div style={{ ...styles.statCard, borderLeftColor: '#3b82f6' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Clientes Morosos</p>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937' }}>{delinquentClients.length}</p>
+            </div>
           </div>
-        )}
 
-        {/* Products View */}
-        {currentView === 'products' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Productos 🥛</h2>
-              {userRole === 'admin' && (
-                <button 
-                  onClick={() => setShowProductForm(true)}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-600"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Nuevo Producto</span>
-                </button>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentUserProducts.map((product) => (
-                <div key={product.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-16 h-16 rounded-lg mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                  <p className="text-sm text-gray-600">{product.category}</p>
-                  <p className="text-lg font-bold text-green-600">{formatCOP(product.price)}</p>
-                  <p className="text-sm text-blue-600">Comisión: {product.commission}%</p>
-                  {userRole === 'admin' && (
-                    <div className="flex space-x-2 mt-3">
-                      <button 
-                        onClick={() => handleEditProduct(product)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+          {/* Delinquent Clients */}
+          {delinquentClients.length > 0 && (
+            <div style={styles.card}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Clientes Morosos 🚨</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {delinquentClients.map((client) => (
+                  <div key={client.id} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    padding: '12px', 
+                    backgroundColor: '#fee2e2', 
+                    borderRadius: '6px' 
+                  }}>
+                    <div>
+                      <p style={{ fontWeight: 'medium', color: '#1f2937' }}>{client.clientName}</p>
+                      <p style={{ fontSize: '14px', color: '#ef4444' }}>{formatCOP(client.amount)} - {client.daysOverdue} días</p>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Product Form Modal - Admin only */}
-            {showProductForm && userRole === 'admin' && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">
-                      {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
-                    </h3>
-                    <button onClick={resetProductForm} className="text-gray-500 hover:text-gray-700">
-                      <X className="w-5 h-5" />
-                    </button>
+                    <span>⏰</span>
                   </div>
-                  
-                  <form onSubmit={handleProductSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                      <input
-                        type="text"
-                        value={productFormData.name}
-                        onChange={(e) => setProductFormData({...productFormData, name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                      <select
-                        value={productFormData.category}
-                        onChange={(e) => setProductFormData({...productFormData, category: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value="Lácteos">Lácteos</option>
-                        <option value="Carnes Frías">Carnes Frías</option>
-                        <option value="Yogures">Yogures</option>
-                        <option value="Otros">Otros</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Precio (COP)</label>
-                      <input
-                        type="number"
-                        value={productFormData.price}
-                        onChange={(e) => setProductFormData({...productFormData, price: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Comisión (%)</label>
-                      <input
-                        type="number"
-                        value={productFormData.commission}
-                        onChange={(e) => setProductFormData({...productFormData, commission: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                      <input
-                        type="number"
-                        value={productFormData.stock}
-                        onChange={(e) => setProductFormData({...productFormData, stock: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">URL de Imagen (opcional)</label>
-                      <input
-                        type="text"
-                        value={productFormData.image}
-                        onChange={(e) => setProductFormData({...productFormData, image: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                      />
-                    </div>
-                    
-                    <div className="flex space-x-3 pt-4">
-                      <button
-                        type="submit"
-                        className="flex-1 bg-green-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600"
-                      >
-                        <Save className="w-4 h-4" />
-                        <span>{editingProduct ? 'Actualizar' : 'Guardar'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetProductForm}
-                        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                ))}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Clients View */}
-        {currentView === 'clients' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
-                {userRole === 'admin' ? 'Clientes 👥' : 'Mis Clientes 👥'}
-              </h2>
-              {userRole === 'collector' && (
-                <button 
-                  onClick={() => {
-                    setEditingClient(null);
-                    setShowClientForm(true);
-                  }}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-600"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Nuevo Cliente</span>
-                </button>
-              )}
             </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3">Cliente</th>
-                    <th className="text-left py-3">Teléfono</th>
-                    <th className="text-left py-3">Dirección</th>
-                    <th className="text-left py-3">Límite Crédito</th>
-                    <th className="text-left py-3">Frecuencia</th>
-                    <th className="text-left py-3">Productos</th>
-                    {userRole === 'admin' && <th className="text-left py-3">Cobrador</th>}
-                    <th className="text-left py-3">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentUserClients.map((client) => (
-                    <tr key={client.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 font-medium">{client.name}</td>
-                      <td className="py-3">{client.phone}</td>
-                      <td className="py-3">{client.address}</td>
-                      <td className="py-3">{formatCOP(client.creditLimit)}</td>
-                      <td className="py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          client.paymentFrequency === 'diario' ? 'bg-blue-100 text-blue-800' :
-                          client.paymentFrequency === 'semanal' ? 'bg-green-100 text-green-800' :
-                          'bg-purple-100 text-purple-800'
-                        }`}>
-                          {client.paymentFrequency === 'diario' ? 'Diario' : 
-                           client.paymentFrequency === 'semanal' ? 'Semanal' : 'Mensual'}
-                        </span>
-                      </td>
-                      <td className="py-3 text-sm">
-                        {getProductNamesByIds(client.products || []).substring(0, 30)}
-                        {getProductNamesByIds(client.products || []).length > 30 ? '...' : ''}
-                      </td>
-                      {userRole === 'admin' && (
-                        <td className="py-3">
-                          {collectors.find(c => c.id === client.collectorId)?.name || 'Sin asignar'}
-                        </td>
-                      )}
-                      <td className="py-3">
-                        <div className="flex space-x-2">
-                          {userRole === 'collector' && (
-                            <>
-                              <button 
-                                onClick={() => handleEditClient(client)}
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteClient(client.id)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                          {userRole === 'admin' && (
-                            <button className="text-gray-400 cursor-not-allowed">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          )}
+        </div>
+      )}
 
-            {/* Client Form Modal - Collectors only */}
-            {showClientForm && userRole === 'collector' && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">
-                      {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
-                    </h3>
-                    <button onClick={resetClientForm} className="text-gray-500 hover:text-gray-700">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  <form onSubmit={handleClientSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nombre/Razón Social</label>
-                      <input
-                        type="text"
-                        value={clientFormData.name}
-                        onChange={(e) => setClientFormData({...clientFormData, name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                      <input
-                        type="text"
-                        value={clientFormData.phone}
-                        onChange={(e) => setClientFormData({...clientFormData, phone: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="310-123-4567"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                      <input
-                        type="text"
-                        value={clientFormData.address}
-                        onChange={(e) => setClientFormData({...clientFormData, address: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Límite de Crédito (COP)</label>
-                      <input
-                        type="number"
-                        value={clientFormData.creditLimit}
-                        onChange={(e) => setClientFormData({...clientFormData, creditLimit: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Frecuencia de Pago</label>
-                      <select
-                        value={clientFormData.paymentFrequency}
-                        onChange={(e) => setClientFormData({...clientFormData, paymentFrequency: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value="diario">Diario</option>
-                        <option value="semanal">Semanal</option>
-                        <option value="mensual">Mensual</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Productos que vende</label>
-                      <div className="border rounded-lg p-3 max-h-40 overflow-y-auto">
-                        {products.map(product => (
-                          <div key={product.id} className="flex items-center space-x-2 py-1">
-                            <input
-                              type="checkbox"
-                              id={`product-${product.id}`}
-                              checked={clientFormData.products.includes(product.id)}
-                              onChange={() => toggleProductSelection(product.id)}
-                              className="rounded"
-                            />
-                            <label htmlFor={`product-${product.id}`} className="text-sm flex-1">
-                              {product.name} - {formatCOP(product.price)}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="flex space-x-3 pt-4">
-                      <button
-                        type="submit"
-                        className="flex-1 bg-green-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600"
-                      >
-                        <Save className="w-4 h-4" />
-                        <span>{editingClient ? 'Actualizar' : 'Guardar'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetClientForm}
-                        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Collectors View - Admin only */}
-        {currentView === 'collectors' && userRole === 'admin' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Gestión de Cobradores 🚴</h2>
+      {/* Clients View */}
+      {currentView === 'clients' && (
+        <div style={styles.card}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              {userRole === 'admin' ? 'Clientes 👥' : 'Mis Clientes 👥'}
+            </h2>
+            {userRole === 'collector' && (
               <button 
-                onClick={() => setShowCollectorForm(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-600"
+                onClick={() => {
+                  setEditingClient(null);
+                  setShowClientForm(true);
+                }}
+                style={styles.primaryButton}
               >
-                <Plus className="w-4 h-4" />
-                <span>Nuevo Cobrador</span>
+                + Nuevo Cliente
               </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {collectors.map((collector) => (
-                <div key={collector.id} className="border rounded-lg p-4">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
-                      <User className="text-blue-600 w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{collector.name}</h3>
-                      <p className="text-sm text-blue-600">{collector.commission}% comisión</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <Phone className="w-4 h-4" />
-                      <span>{collector.phone}</span>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2 mt-3">
-                    <button 
-                      onClick={() => handleEditCollector(collector)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteCollector(collector.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Collector Form Modal */}
-            {showCollectorForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">
-                      {editingCollector ? 'Editar Cobrador' : 'Nuevo Cobrador'}
-                    </h3>
-                    <button onClick={resetCollectorForm} className="text-gray-500 hover:text-gray-700">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  <form onSubmit={handleCollectorSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                      <input
-                        type="text"
-                        value={collectorFormData.name}
-                        onChange={(e) => setCollectorFormData({...collectorFormData, name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                      <input
-                        type="text"
-                        value={collectorFormData.phone}
-                        onChange={(e) => setCollectorFormData({...collectorFormData, phone: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="310-123-4567"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Porcentaje de Comisión (%)</label>
-                      <input
-                        type="number"
-                        value={collectorFormData.commission}
-                        onChange={(e) => setCollectorFormData({...collectorFormData, commission: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="flex space-x-3 pt-4">
-                      <button
-                        type="submit"
-                        className="flex-1 bg-green-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600"
-                      >
-                        <Save className="w-4 h-4" />
-                        <span>{editingCollector ? 'Actualizar' : 'Guardar'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetCollectorForm}
-                        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
             )}
           </div>
-        )}
-
-        {/* Payments View */}
-        {currentView === 'payments' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Registro de Pagos 💳</h2>
-            
-            <div className="space-y-4">
-              {currentUserDebts.map((debt) => (
-                <div key={debt.id} className="border rounded-lg p-4 hover:shadow-md">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {clients.find(c => c.id === debt.clientId)?.name || 'Cliente desconocido'}
-                      </h3>
-                      <p className="text-red-600 font-medium">{formatCOP(debt.amount)}</p>
-                      <p className="text-sm text-gray-600">Atrasado: {debt.daysOverdue} días</p>
-                      <p className="text-sm text-blue-600">
-                        Cuotas: {debt.paidInstallments} de {debt.totalInstallments}
-                      </p>
-                    </div>
-                    <button 
-                      onClick={() => handleRegisterPayment(debt)}
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-600"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Registrar Pago</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Payment Form Modal */}
-            {showPaymentForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Registrar Pago</h3>
-                    <button onClick={resetPaymentForm} className="text-gray-500 hover:text-gray-700">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="font-medium">
-                      Cliente: {clients.find(c => c.id === selectedDebt?.clientId)?.name}
-                    </p>
-                    <p className="text-red-600">Monto adeudado: {formatCOP(selectedDebt?.amount || 0)}</p>
-                    <p className="text-blue-600">
-                      Cuotas: {selectedDebt?.paidInstallments || 0} de {selectedDebt?.totalInstallments || 1}
-                    </p>
-                  </div>
-                  
-                  <form onSubmit={handlePaymentSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Monto a pagar (COP)</label>
-                      <input
-                        type="number"
-                        value={paymentFormData.amount}
-                        onChange={(e) => setPaymentFormData({...paymentFormData, amount: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        required
-                        min="1"
-                        max={selectedDebt?.amount}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
-                      <select
-                        value={paymentFormData.paymentMethod}
-                        onChange={(e) => setPaymentFormData({...paymentFormData, paymentMethod: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value="efectivo">Efectivo</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="tarjeta">Tarjeta</option>
-                      </select>
-                    </div>
-                    
-                    <div className="flex space-x-3 pt-4">
-                      <button
-                        type="submit"
-                        className="flex-1 bg-green-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Registrar Pago</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetPaymentForm}
-                        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
+          
+          <div style={{ overflowX: 'auto' }}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Cliente</th>
+                  <th style={styles.th}>Teléfono</th>
+                  <th style={styles.th}>Dirección</th>
+                  <th style={styles.th}>Límite Crédito</th>
+                  <th style={styles.th}>Frecuencia</th>
+                  <th style={styles.th}>Productos</th>
+                  {userRole === 'admin' && <th style={styles.th}>Cobrador</th>}
+                  <th style={styles.th}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentUserClients.map((client) => (
+                  <tr key={client.id}>
+                    <td style={{ ...styles.td, fontWeight: 'medium' }}>{client.name}</td>
+                    <td style={styles.td}>{client.phone}</td>
+                    <td style={styles.td}>{client.address}</td>
+                    <td style={styles.td}>{formatCOP(client.creditLimit)}</td>
+                    <td style={styles.td}>
+                      <span style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '12px', 
+                        fontSize: '12px', 
+                        fontWeight: 'bold',
+                        backgroundColor: client.paymentFrequency === 'diario' ? '#dbeafe' : 
+                                      client.paymentFrequency === 'semanal' ? '#dcfce7' : '#ede9fe',
+                        color: client.paymentFrequency === 'diario' ? '#2563eb' : 
+                                client.paymentFrequency === 'semanal' ? '#16a34a' : '#7c3aed'
+                      }}>
+                        {client.paymentFrequency === 'diario' ? 'Diario' : 
+                         client.paymentFrequency === 'semanal' ? 'Semanal' : 'Mensual'}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      {getProductNamesByIds(client.products || []).substring(0, 20)}
+                      {getProductNamesByIds(client.products || []).length > 20 ? '...' : ''}
+                    </td>
+                    {userRole === 'admin' && (
+                      <td style={styles.td}>
+                        {collectors.find(c => c.id === client.collectorId)?.name || 'Sin asignar'}
+                      </td>
+                    )}
+                    <td style={styles.td}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {userRole === 'collector' && (
+                          <>
+                            <button 
+                              onClick={() => handleEditClient(client)}
+                              style={styles.successButton}
+                            >
+                              Editar
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteClient(client.id)}
+                              style={styles.dangerButton}
+                            >
+                              Eliminar
+                            </button>
+                          </>
+                        )}
+                        {userRole === 'admin' && (
+                          <span style={{ color: '#9ca3af' }}>Ver</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
 
-        {currentView === 'reports' && userRole === 'admin' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Reportes 📈</h2>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">Reporte de Cobranza Diaria</h3>
-                  <div className="space-y-3">
-                    {collectors.map((collector) => {
-                      const collectorPayments = payments.filter(p => p.collectorId === collector.id);
-                      const collectorDebts = debts.filter(d => d.collectorId === collector.id && d.status === 'pending');
-                      const totalCollected = collectorPayments.reduce((sum, p) => sum + p.amount, 0);
-                      const totalPending = collectorDebts.reduce((sum, d) => sum + d.amount, 0);
-                      const commissions = totalCollected * (collector.commission / 100);
-                      
-                      return (
-                        <div key={collector.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                          <span className="font-medium">{collector.name}</span>
-                          <div className="text-right">
-                            <p className="text-green-600 font-medium">{formatCOP(totalCollected)}</p>
-                            <p className="text-sm text-gray-600">Pendiente: {formatCOP(totalPending)}</p>
-                            <p className="text-sm text-blue-600">Comisión: {formatCOP(commissions)}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+          {/* Client Form Modal */}
+          {showClientForm && userRole === 'collector' && (
+            <div style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.5)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{ 
+                backgroundColor: 'white', 
+                borderRadius: '12px', 
+                padding: '24px', 
+                width: '90%', 
+                maxWidth: '500px' 
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                    {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
+                  </h3>
+                  <button 
+                    onClick={resetClientForm} 
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      fontSize: '20px', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    ×
+                  </button>
                 </div>
                 
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">Resumen General</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between p-2 bg-green-50 rounded">
-                      <span>Total Cobrado</span>
-                      <span className="text-green-600">{formatCOP(payments.reduce((sum, p) => sum + p.amount, 0))}</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-red-50 rounded">
-                      <span>Total Pendiente</span>
-                      <span className="text-red-600">{formatCOP(debts.filter(d => d.status === 'pending').reduce((sum, d) => sum + d.amount, 0))}</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-blue-50 rounded">
-                      <span>Total Clientes</span>
-                      <span className="text-blue-600">{clients.length}</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-purple-50 rounded">
-                      <span>Total Cobradores</span>
-                      <span className="text-purple-600">{collectors.length}</span>
+                <form onSubmit={handleClientSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Nombre/Razón Social
+                    </label>
+                    <input
+                      type="text"
+                      value={clientFormData.name}
+                      onChange={(e) => setClientFormData({...clientFormData, name: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Teléfono
+                    </label>
+                    <input
+                      type="text"
+                      value={clientFormData.phone}
+                      onChange={(e) => setClientFormData({...clientFormData, phone: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      placeholder="310-123-4567"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      value={clientFormData.address}
+                      onChange={(e) => setClientFormData({...clientFormData, address: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Límite de Crédito (COP)
+                    </label>
+                    <input
+                      type="number"
+                      value={clientFormData.creditLimit}
+                      onChange={(e) => setClientFormData({...clientFormData, creditLimit: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Frecuencia de Pago
+                    </label>
+                    <select
+                      value={clientFormData.paymentFrequency}
+                      onChange={(e) => setClientFormData({...clientFormData, paymentFrequency: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="diario">Diario</option>
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Productos que vende
+                    </label>
+                    <div style={{ 
+                      border: '1px solid #d1d5db', 
+                      borderRadius: '6px', 
+                      padding: '12px', 
+                      maxHeight: '200px', 
+                      overflowY: 'auto'
+                    }}>
+                      {products.map(product => (
+                        <div key={product.id} style={{ display: 'flex', alignItems: 'center', padding: '6px 0' }}>
+                          <input
+                            type="checkbox"
+                            id={`product-${product.id}`}
+                            checked={clientFormData.products.includes(product.id)}
+                            onChange={() => toggleProductSelection(product.id)}
+                            style={{ marginRight: '12px' }}
+                          />
+                          <label htmlFor={`product-${product.id}`} style={{ fontSize: '14px', flex: 1 }}>
+                            {product.name} - {formatCOP(product.price)}
+                          </label>
+                        </div>
+                      ))}
                     </div>
                   </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px', paddingTop: '16px' }}>
+                    <button
+                      type="submit"
+                      style={styles.primaryButton}
+                    >
+                      {editingClient ? 'Actualizar' : 'Guardar'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetClientForm}
+                      style={{ 
+                        flex: 1, 
+                        backgroundColor: '#e5e7eb', 
+                        color: '#1f2937', 
+                        padding: '12px', 
+                        borderRadius: '6px', 
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Payments View */}
+      {currentView === 'payments' && (
+        <div style={styles.card}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Registro de Pagos 💳</h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {currentUserDebts.map((debt) => (
+              <div key={debt.id} style={{ 
+                border: '1px solid #e5e7eb', 
+                borderRadius: '8px', 
+                padding: '16px' 
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h3 style={{ fontWeight: 'bold', color: '#1f2937' }}>
+                      {clients.find(c => c.id === debt.clientId)?.name || 'Cliente desconocido'}
+                    </h3>
+                    <p style={{ color: '#ef4444', fontWeight: 'medium' }}>{formatCOP(debt.amount)}</p>
+                    <p style={{ fontSize: '14px', color: '#6b7280' }}>Atrasado: {debt.daysOverdue} días</p>
+                    <p style={{ fontSize: '14px', color: '#2563eb' }}>
+                      Cuotas: {debt.paidInstallments} de {debt.totalInstallments}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => handleRegisterPayment(debt)}
+                    style={styles.primaryButton}
+                  >
+                    Registrar Pago
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Payment Form Modal */}
+          {showPaymentForm && (
+            <div style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.5)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{ 
+                backgroundColor: 'white', 
+                borderRadius: '12px', 
+                padding: '24px', 
+                width: '90%', 
+                maxWidth: '500px' 
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>Registrar Pago</h3>
+                  <button 
+                    onClick={resetPaymentForm} 
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      fontSize: '20px', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <div style={{ 
+                  marginBottom: '16px', 
+                  padding: '16px', 
+                  backgroundColor: '#f3f4f6', 
+                  borderRadius: '8px'
+                }}>
+                  <p style={{ fontWeight: 'bold' }}>
+                    Cliente: {clients.find(c => c.id === selectedDebt?.clientId)?.name}
+                  </p>
+                  <p style={{ color: '#ef4444' }}>
+                    Monto adeudado: {formatCOP(selectedDebt?.amount || 0)}
+                  </p>
+                  <p style={{ color: '#2563eb' }}>
+                    Cuotas: {selectedDebt?.paidInstallments || 0} de {selectedDebt?.totalInstallments || 1}
+                  </p>
+                </div>
+                
+                <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Monto a pagar (COP)
+                    </label>
+                    <input
+                      type="number"
+                      value={paymentFormData.amount}
+                      onChange={(e) => setPaymentFormData({...paymentFormData, amount: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                      min="1"
+                      max={selectedDebt?.amount}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Método de Pago
+                    </label>
+                    <select
+                      value={paymentFormData.paymentMethod}
+                      onChange={(e) => setPaymentFormData({...paymentFormData, paymentMethod: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="efectivo">Efectivo</option>
+                      <option value="transferencia">Transferencia</option>
+                      <option value="tarjeta">Tarjeta</option>
+                    </select>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px', paddingTop: '16px' }}>
+                    <button
+                      type="submit"
+                      style={styles.primaryButton}
+                    >
+                      Registrar Pago
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetPaymentForm}
+                      style={{ 
+                        flex: 1, 
+                        backgroundColor: '#e5e7eb', 
+                        color: '#1f2937', 
+                        padding: '12px', 
+                        borderRadius: '6px', 
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Products View */}
+      {currentView === 'products' && (
+        <div style={styles.card}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>Productos 🥛</h2>
+            {userRole === 'admin' && (
+              <button 
+                onClick={() => {
+                  setEditingProduct(null);
+                  setShowProductForm(true);
+                }}
+                style={styles.primaryButton}
+              >
+                + Nuevo Producto
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            {getCurrentUserProducts().map((product) => (
+              <div key={product.id} style={{ 
+                border: '1px solid #e5e7eb', 
+                borderRadius: '8px', 
+                padding: '16px',
+                textAlign: 'center'
+              }}>
+                <img 
+                  src={product.image} 
+                  alt={product.name}
+                  style={{ width: '64px', height: '64px', borderRadius: '8px', margin: '0 auto 12px' }}
+                />
+                <h3 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{product.name}</h3>
+                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>{product.category}</p>
+                <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#27ae60', marginBottom: '4px' }}>{formatCOP(product.price)}</p>
+                <p style={{ fontSize: '14px', color: '#2563eb' }}>Comisión: {product.commission}%</p>
+                {userRole === 'admin' && (
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' }}>
+                    <button 
+                      onClick={() => handleEditProduct(product)}
+                      style={styles.successButton}
+                    >
+                      Editar
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteProduct(product.id)}
+                      style={styles.dangerButton}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Product Form Modal */}
+          {showProductForm && userRole === 'admin' && (
+            <div style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.5)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{ 
+                backgroundColor: 'white', 
+                borderRadius: '12px', 
+                padding: '24px', 
+                width: '90%', 
+                maxWidth: '500px' 
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                    {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
+                  </h3>
+                  <button 
+                    onClick={resetProductForm} 
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      fontSize: '20px', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <form onSubmit={handleProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Nombre
+                    </label>
+                    <input
+                      type="text"
+                      value={productFormData.name}
+                      onChange={(e) => setProductFormData({...productFormData, name: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Categoría
+                    </label>
+                    <select
+                      value={productFormData.category}
+                      onChange={(e) => setProductFormData({...productFormData, category: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="Lácteos">Lácteos</option>
+                      <option value="Carnes Frías">Carnes Frías</option>
+                      <option value="Yogures">Yogures</option>
+                      <option value="Otros">Otros</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Precio (COP)
+                    </label>
+                    <input
+                      type="number"
+                      value={productFormData.price}
+                      onChange={(e) => setProductFormData({...productFormData, price: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Comisión (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={productFormData.commission}
+                      onChange={(e) => setProductFormData({...productFormData, commission: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Stock
+                    </label>
+                    <input
+                      type="number"
+                      value={productFormData.stock}
+                      onChange={(e) => setProductFormData({...productFormData, stock: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      URL de Imagen (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={productFormData.image}
+                      onChange={(e) => setProductFormData({...productFormData, image: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px', paddingTop: '16px' }}>
+                    <button
+                      type="submit"
+                      style={styles.primaryButton}
+                    >
+                      {editingProduct ? 'Actualizar' : 'Guardar'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetProductForm}
+                      style={{ 
+                        flex: 1, 
+                        backgroundColor: '#e5e7eb', 
+                        color: '#1f2937', 
+                        padding: '12px', 
+                        borderRadius: '6px', 
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Collectors View - Admin only */}
+      {currentView === 'collectors' && userRole === 'admin' && (
+        <div style={styles.card}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>Gestión de Cobradores 🚴</h2>
+            <button 
+              onClick={() => {
+                setEditingCollector(null);
+                setShowCollectorForm(true);
+              }}
+              style={styles.primaryButton}
+            >
+              + Nuevo Cobrador
+            </button>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+            {collectors.map((collector) => (
+              <div key={collector.id} style={{ 
+                border: '1px solid #e5e7eb', 
+                borderRadius: '8px', 
+                padding: '16px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ 
+                    backgroundColor: '#dbeafe', 
+                    width: '48px', 
+                    height: '48px', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center'
+                  }}>
+                    <span style={{ color: '#2563eb' }}>👤</span>
+                  </div>
+                  <div>
+                    <h3 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{collector.name}</h3>
+                    <p style={{ fontSize: '14px', color: '#2563eb' }}>{collector.commission}% comisión</p>
+                  </div>
+                </div>
+                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '12px' }}>
+                  <span>📞</span> {collector.phone}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => handleEditCollector(collector)}
+                    style={styles.successButton}
+                  >
+                    Editar
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteCollector(collector.id)}
+                    style={styles.dangerButton}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Collector Form Modal */}
+          {showCollectorForm && (
+            <div style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.5)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{ 
+                backgroundColor: 'white', 
+                borderRadius: '12px', 
+                padding: '24px', 
+                width: '90%', 
+                maxWidth: '500px' 
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                    {editingCollector ? 'Editar Cobrador' : 'Nuevo Cobrador'}
+                  </h3>
+                  <button 
+                    onClick={resetCollectorForm} 
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      fontSize: '20px', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <form onSubmit={handleCollectorSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Nombre
+                    </label>
+                    <input
+                      type="text"
+                      value={collectorFormData.name}
+                      onChange={(e) => setCollectorFormData({...collectorFormData, name: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Teléfono
+                    </label>
+                    <input
+                      type="text"
+                      value={collectorFormData.phone}
+                      onChange={(e) => setCollectorFormData({...collectorFormData, phone: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      placeholder="310-123-4567"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'medium', marginBottom: '8px' }}>
+                      Porcentaje de Comisión (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={collectorFormData.commission}
+                      onChange={(e) => setCollectorFormData({...collectorFormData, commission: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                      required
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px', paddingTop: '16px' }}>
+                    <button
+                      type="submit"
+                      style={styles.primaryButton}
+                    >
+                      {editingCollector ? 'Actualizar' : 'Guardar'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetCollectorForm}
+                      style={{ 
+                        flex: 1, 
+                        backgroundColor: '#e5e7eb', 
+                        color: '#1f2937', 
+                        padding: '12px', 
+                        borderRadius: '6px', 
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Reports View - Admin only */}
+      {currentView === 'reports' && userRole === 'admin' && (
+        <div style={styles.card}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Reportes 📈</h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div style={{ backgroundColor: '#f3f4f6', padding: '20px', borderRadius: '8px' }}>
+              <h3 style={{ fontWeight: 'bold', marginBottom: '16px' }}>Resumen General</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total Cobrado</span>
+                  <span style={{ fontWeight: 'bold', color: '#27ae60' }}>{formatCOP(payments.reduce((sum, p) => sum + p.amount, 0))}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total Pendiente</span>
+                  <span style={{ fontWeight: 'bold', color: '#ef4444' }}>{formatCOP(debts.filter(d => d.status === 'pending').reduce((sum, d) => sum + d.amount, 0))}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total Clientes</span>
+                  <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>{clients.length}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total Cobradores</span>
+                  <span style={{ fontWeight: 'bold', color: '#8b5cf6' }}>{collectors.length}</span>
                 </div>
               </div>
             </div>
+            
+            <div style={{ backgroundColor: '#f3f4f6', padding: '20px', borderRadius: '8px' }}>
+              <h3 style={{ fontWeight: 'bold', marginBottom: '16px' }}>Reporte por Cobrador</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {collectors.map(collector => {
+                  const collectorPayments = payments.filter(p => p.collectorId === collector.id);
+                  const collectorDebts = debts.filter(d => d.collectorId === collector.id && d.status === 'pending');
+                  const totalCollected = collectorPayments.reduce((sum, p) => sum + p.amount, 0);
+                  const totalPending = collectorDebts.reduce((sum, d) => sum + d.amount, 0);
+                  const commissions = totalCollected * (collector.commission / 100);
+                  
+                  return (
+                    <div key={collector.id} style={{ 
+                      padding: '12px', 
+                      backgroundColor: 'white', 
+                      borderRadius: '6px',
+                      borderLeft: '3px solid #27ae60'
+                    }}>
+                      <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>{collector.name}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span>Cobrado: {formatCOP(totalCollected)}</span>
+                        <span style={{ color: '#27ae60' }}>✓</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span>Pendiente: {formatCOP(totalPending)}</span>
+                        <span style={{ color: '#ef4444' }}>⚠️</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span>Comisión: {formatCOP(commissions)}</span>
+                        <span style={{ color: '#f59e0b' }}>💰</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* WhatsApp Modal */}
       {showWhatsAppModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Enviar Ticket por WhatsApp</h3>
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          backgroundColor: 'rgba(0,0,0,0.5)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{ 
+            backgroundColor: 'white', 
+            borderRadius: '12px', 
+            padding: '24px', 
+            width: '90%', 
+            maxWidth: '500px' 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>Enviar Ticket por WhatsApp</h3>
               <button 
                 onClick={() => setShowWhatsAppModal(false)} 
-                className="text-gray-500 hover:text-gray-700"
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  fontSize: '20px', 
+                  cursor: 'pointer' 
+                }}
               >
-                <X className="w-5 h-5" />
+                ×
               </button>
             </div>
             
-            <div className="mb-4 p-3 bg-green-50 rounded-lg">
-              <p className="text-sm whitespace-pre-line">{whatsAppMessage}</p>
+            <div style={{ 
+              marginBottom: '20px', 
+              padding: '16px', 
+              backgroundColor: '#dcfce7', 
+              borderRadius: '8px',
+              whiteSpace: 'pre-line',
+              fontSize: '14px'
+            }}>
+              {whatsAppMessage}
             </div>
             
-            <div className="flex space-x-3">
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={openWhatsApp}
-                className="flex-1 bg-green-500 text-white py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-green-600"
+                style={{ 
+                  flex: 1, 
+                  backgroundColor: '#25D366', 
+                  color: 'white', 
+                  padding: '12px', 
+                  borderRadius: '6px', 
+                  border: 'none', 
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
               >
-                <MessageCircle className="w-4 h-4" />
-                <span>Abrir WhatsApp</span>
+                Abrir WhatsApp
               </button>
               <button
                 onClick={() => setShowWhatsAppModal(false)}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
+                style={{ 
+                  flex: 1, 
+                  backgroundColor: '#e5e7eb', 
+                  color: '#1f2937', 
+                  padding: '12px', 
+                  borderRadius: '6px', 
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
               >
                 Cancelar
               </button>
