@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Package, CreditCard, DollarSign, AlertTriangle, TrendingUp, User, Phone, MapPin, Calendar, CheckCircle, Clock, Plus, Edit2, Trash2, Search, Filter, Download, Save, X, Eye, MessageCircle } from 'lucide-react';
+import { Users, Package, CreditCard, DollarSign, AlertTriangle, TrendingUp, User, Phone, CheckCircle, Clock, Plus, Edit2, Trash2, Download, Save, X, Eye, MessageCircle } from 'lucide-react';
 
 // Mock data structure with separate products per collector
 const initialCollectors = [
@@ -166,21 +166,6 @@ const App = () => {
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
-  };
-
-  // Calculate installments based on payment frequency
-  const calculateInstallments = (amount, frequency) => {
-    let totalInstallments = 1;
-    
-    if (frequency === 'diario') {
-      totalInstallments = Math.min(30, Math.ceil(amount / 10000)); // Max 30 days
-    } else if (frequency === 'semanal') {
-      totalInstallments = Math.min(12, Math.ceil(amount / 50000)); // Max 12 weeks
-    } else if (frequency === 'mensual') {
-      totalInstallments = Math.min(12, Math.ceil(amount / 100000)); // Max 12 months
-    }
-    
-    return Math.max(1, totalInstallments);
   };
 
   // Dashboard calculations
